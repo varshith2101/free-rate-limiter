@@ -1,0 +1,64 @@
+##############################
+# Monorepo: Node/Java/Docker
+##############################
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# Node
+**/node_modules/
+**/.npm
+**/.pnpm-store
+**/.yarn/
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/pnpm-debug.log*
+
+# Vite / React
+**/dist/
+**/.vite/
+
+# Java / Maven / Gradle
+**/target/
+**/out/
+**/.classpath
+**/.project
+**/.settings/
+**/.idea/
+**/*.iml
+
+# Build artifacts
+**/build/
+**/.gradle/
+
+# Logs
+**/logs/
+**/*.log
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Docker
+**/*.pid
+**/*.seed
+**/docker-data/
+**/docker-volume/
+
+# Coverage / Test reports
+**/coverage/
+**/.nyc_output/
+**/test-results/
+**/surefire-reports/
+
+# Misc
+**/*.tmp
+**/*.swp
+**/*.bak
+
+testing-app/

@@ -1,0 +1,128 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Sora:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Sora', system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: dark;
+  --neo-bg: #050806;
+  --neo-surface: #0b120e;
+  --neo-surface-2: #0f1a13;
+  --neo-border: #1a2a1f;
+  --neo-accent: #44d62c;
+  --neo-accent-soft: rgba(68, 214, 44, 0.22);
+}
+
+@layer base {
+  body {
+    @apply text-white;
+    background:
+      radial-gradient(900px 420px at 15% -10%, rgba(68, 214, 44, 0.2), transparent 60%),
+      radial-gradient(1200px 520px at 85% -15%, rgba(68, 214, 44, 0.12), transparent 65%),
+      linear-gradient(160deg, var(--neo-bg) 0%, var(--neo-surface) 50%, var(--neo-bg) 100%);
+    margin: 0;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(68, 214, 44, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(68, 214, 44, 0.035) 1px, transparent 1px);
+    background-size: 110px 110px;
+    mask-image: radial-gradient(circle at 25% 15%, rgba(0, 0, 0, 0.85), transparent 70%);
+    opacity: 0.45;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: -10% -15% auto auto;
+    width: 600px;
+    height: 600px;
+    pointer-events: none;
+    background: radial-gradient(circle, rgba(68, 214, 44, 0.2), transparent 65%);
+    filter: blur(14px);
+    opacity: 0.7;
+    z-index: 0;
+  }
+
+
+  input, textarea, select {
+    @apply transition-all duration-200;
+  }
+
+  button {
+    @apply transition-all duration-200;
+  }
+
+  code, pre {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  }
+}
+
+@layer components {
+  .glass-effect {
+    @apply bg-white/5 backdrop-blur-md border border-emerald-500/10;
+  }
+
+  .card-dark {
+    @apply bg-[#0b120e]/80 border border-emerald-500/15 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.35)] transition hover:border-emerald-400/50;
+  }
+
+  .btn-primary {
+    @apply bg-gradient-to-r from-emerald-400 via-lime-400 to-emerald-300 text-slate-900 font-semibold py-2.5 rounded-lg hover:shadow-lg hover:shadow-emerald-400/40 transition;
+  }
+
+  .btn-secondary {
+    @apply bg-transparent text-white font-semibold py-2.5 rounded-lg border border-emerald-500/30 hover:border-emerald-400/60 hover:text-emerald-100 transition;
+  }
+
+  .input-dark {
+    @apply w-full bg-[#0b120e]/70 border border-emerald-500/20 text-white placeholder-gray-500 rounded-lg px-4 py-2.5 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 transition;
+  }
+
+  .label-dark {
+    @apply block text-sm font-medium text-gray-300 mb-2;
+  }
+
+  .neo-card {
+    @apply bg-[#0b120e]/85 border border-emerald-500/20 rounded-2xl shadow-[0_0_0_1px_rgba(68,214,44,0.08),0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur;
+  }
+
+  .neo-panel {
+    @apply bg-[#0a0f0c]/70 border border-emerald-500/15 rounded-xl;
+  }
+
+  .neo-input {
+    @apply w-full bg-[#0a0f0c]/70 border border-emerald-500/25 text-white placeholder-gray-500 rounded-lg px-4 py-2.5 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 transition;
+  }
+
+  .neo-button {
+    @apply inline-flex items-center gap-2 bg-gradient-to-r from-emerald-400 via-lime-400 to-emerald-300 text-slate-900 font-semibold px-4 py-2 rounded-lg hover:shadow-lg hover:shadow-emerald-400/40 transition;
+  }
+
+  .neo-button-ghost {
+    @apply inline-flex items-center gap-2 border border-emerald-500/30 text-emerald-100 px-4 py-2 rounded-lg hover:border-emerald-400/70 hover:text-emerald-50 transition;
+  }
+
+  .neo-link {
+    @apply text-emerald-300 hover:text-emerald-200 transition;
+  }
+}
+
+#root {
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
