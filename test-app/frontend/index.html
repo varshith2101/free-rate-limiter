@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test App Articles</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header>
+        <h1>Test App Articles</h1>
+        <p>Simple CRUD-like app for rate limiter testing.</p>
+      </header>
+
+      <section class="card">
+        <h2>Create Article</h2>
+        <form id="article-form">
+          <label>
+            Title
+            <input type="text" id="title" required />
+          </label>
+          <label>
+            Content
+            <textarea id="content" rows="4" required></textarea>
+          </label>
+          <label>
+            Owner Name
+            <input type="text" id="ownerName" placeholder="matches OWNER_NAME" required />
+          </label>
+          <label>
+            Owner Password
+            <input type="password" id="ownerPassword" placeholder="matches OWNER_PASSWORD" required />
+          </label>
+          <button type="submit">Create Article</button>
+        </form>
+        <p id="form-message" class="message"></p>
+      </section>
+
+      <section class="card">
+        <div class="row">
+          <h2>Articles</h2>
+          <button id="refresh-btn" type="button">Refresh</button>
+        </div>
+        <div id="articles" class="articles"></div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

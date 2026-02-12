@@ -1,5 +1,5 @@
 ##############################
-# Monorepo: Node/Java/Docker
+# Monorepo: Node/Docker
 ##############################
 
 # Env files
@@ -21,18 +21,9 @@
 **/dist/
 **/.vite/
 
-# Java / Maven / Gradle
-**/target/
-**/out/
-**/.classpath
-**/.project
-**/.settings/
-**/.idea/
-**/*.iml
-
 # Build artifacts
 **/build/
-**/.gradle/
+**/target/
 
 # Logs
 **/logs/

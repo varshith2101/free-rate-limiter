@@ -1,27 +1,22 @@
-# Build stage
-FROM maven:3.9-eclipse-temurin-21 AS build
+FROM node:20-alpine AS build
 WORKDIR /app
 
-# Copy pom.xml and download dependencies
-COPY pom.xml .
-RUN mvn dependency:go-offline -B
+COPY package.json package-lock.json* ./
+RUN npm install
 
-# Copy source code and build
+COPY prisma ./prisma
+RUN npx prisma generate
+
+COPY tsconfig.json ./
 COPY src ./src
-RUN mvn clean package -DskipTests
+RUN npm run build
 
-# Runtime stage
-FROM eclipse-temurin:21-jre-alpine
+FROM node:20-alpine
 WORKDIR /app
+ENV NODE_ENV=production
 
-# Install curl for health checks
-RUN apk add --no-cache curl
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
 
-# Copy the jar from build stage
-COPY --from=build /app/target/*.jar app.jar
-
-# Expose port
 EXPOSE 8081
-
-# Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+CMD ["node", "dist/index.js"]

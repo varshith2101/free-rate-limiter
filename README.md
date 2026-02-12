@@ -30,9 +30,9 @@ Steps:
    cp .env.example .env
    ```
 2. Fill in the required values in `.env`:
-   - `DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`
-   - `JWT_SECRET`
-   - `MAIL_USERNAME`, `MAIL_PASSWORD` (SMTP)
+  - `DATABASE_URL`
+  - `JWT_SECRET`
+  - `MAIL_USERNAME`, `MAIL_PASSWORD` (SMTP)
 3. Launch the stack:
    ```bash
    ./launch-services.sh up
@@ -41,7 +41,37 @@ Steps:
 Access:
 - Dashboard: http://localhost
 - Backend API: http://localhost/api/v1
-- Health: http://localhost/actuator/health
+- Health: http://localhost/api/v1/health
+
+## Local Development (Node)
+
+Prerequisites:
+- Node.js 18+
+- PostgreSQL and Redis (use Docker Compose if you want)
+
+Steps:
+1. Start Redis (optional if already running):
+  ```bash
+  docker compose up -d redis
+  ```
+2. Backend setup:
+  ```bash
+  cd ratelimiter
+  npm install
+  npx prisma generate
+  npx prisma migrate dev --name init
+  npm run dev
+  ```
+3. Frontend setup (separate terminal):
+  ```bash
+  cd dashboard
+  npm install
+  npm run dev
+  ```
+
+Access:
+- Dashboard: http://localhost:3000
+- Backend API: http://localhost:8081/api/v1
 
 ## Auth Mode (Solo vs Standard)
 
@@ -108,7 +138,7 @@ Open an endpoint and run a nuke test to simulate load. The test logs results and
 ```
 rate-lim/
   dashboard/        # React dashboard
-  ratelimiter/      # Spring Boot API
+  ratelimiter/      # Node.js API
   nginx-gateway/    # Single entry point (port 80)
   docker-compose.yml
   launch-services.sh

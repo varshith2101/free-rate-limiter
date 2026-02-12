@@ -1,0 +1,161 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum TenantTier {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum Algorithm {
+  TOKEN_BUCKET
+  SLIDING_WINDOW
+  FIXED_WINDOW
+  LEAKY_BUCKET
+}
+
+enum LimitBy {
+  IP
+  USER_ID
+  API_KEY
+  CUSTOM_HEADER
+}
+
+model User {
+  id                      String   @id @default(uuid())
+  email                   String   @unique
+  passwordHash            String
+  name                    String
+  isEmailVerified         Boolean  @default(false)
+  tenantId                String?
+  otpCode                 String?
+  otpExpiry               DateTime?
+  verificationToken       String?
+  verificationTokenExpiry DateTime?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
+
+model Tenant {
+  id        String      @id @default(uuid())
+  name      String
+  userId    String?
+  tier      TenantTier
+  createdAt DateTime    @default(now())
+  apiKeys   ApiKey[]
+  endpoints Endpoint[]
+  configs   RateLimitConfig[]
+  logs      RateLimitLog[]
+
+  @@index([userId])
+}
+
+model ApiKey {
+  id        String   @id @default(uuid())
+  tenantId  String
+  apiKey    String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  expiresAt DateTime?
+  isActive  Boolean  @default(true)
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+}
+
+model BackendLink {
+  id                      String   @id @default(uuid())
+  userId                  String
+  backendUrl              String
+  nickname                String
+  accentColor             String
+  verificationToken       String
+  isVerified              Boolean  @default(false)
+  verificationAttempts    Int      @default(0)
+  lastVerificationAttempt DateTime?
+  createdAt               DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Endpoint {
+  id            String   @id @default(uuid())
+  tenantId      String
+  backendLinkId String?
+  basePath      String
+  path          String
+  httpMethod    String   @default("*")
+  description   String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  configs       RateLimitConfig[]
+  logs          RateLimitLog[]
+
+  @@index([tenantId])
+  @@index([basePath, path])
+}
+
+model RateLimitConfig {
+  id             String    @id @default(uuid())
+  tenantId       String
+  endpointId     String?
+  endpointPattern String
+  httpMethod     String    @default("*")
+  maxRequests    Int
+  windowSeconds  Int
+  algorithm      Algorithm @default(TOKEN_BUCKET)
+  refillRate     Float?
+  createdAt      DateTime  @default(now())
+  isActive       Boolean   @default(true)
+  limitBy        LimitBy   @default(IP)
+  customHeader   String?
+  tenant         Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  endpoint       Endpoint? @relation(fields: [endpointId], references: [id], onDelete: SetNull)
+  logs           RateLimitLog[]
+
+  @@index([tenantId, endpointPattern])
+  @@index([endpointId])
+}
+
+model RateLimitLog {
+  id               String    @id @default(uuid())
+  tenantId         String
+  endpointId       String?
+  configId         String?
+  timestamp        DateTime
+  clientIdentifier String
+  identifierType   LimitBy
+  allowed          Boolean
+  currentCount     Int?
+  maxRequests      Int?
+  algorithm        Algorithm?
+  httpMethod       String?
+  requestPath      String?
+  countryCode      String?
+  responseTimeMs   Int?
+  tenant           Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  endpoint         Endpoint? @relation(fields: [endpointId], references: [id], onDelete: SetNull)
+  config           RateLimitConfig? @relation(fields: [configId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, timestamp])
+  @@index([endpointId, timestamp])
+  @@index([timestamp])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}

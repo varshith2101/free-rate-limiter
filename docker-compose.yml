@@ -13,7 +13,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # Spring Boot Backend
+  # Node.js Backend
   backend:
     build:
       context: ./ratelimiter
@@ -25,19 +25,29 @@ services:
       - 8.8.8.8
       - 1.1.1.1
     environment:
-      SPRING_PROFILES_ACTIVE: prod
+      NODE_ENV: production
+      PORT: 8081
       DATABASE_URL: ${DATABASE_URL}
-      DATABASE_USERNAME: ${DATABASE_USERNAME}
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-      SPRING_DATA_REDIS_HOST: redis
-      SPRING_DATA_REDIS_PORT: 6379
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
+      JWT_REFRESH_EXPIRATION_MS: ${JWT_REFRESH_EXPIRATION_MS}
+      AUTH_MODE: ${AUTH_MODE}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_FROM: ${MAIL_FROM}
+      MAIL_SSL_ENABLE: ${MAIL_SSL_ENABLE}
     ports: []
     depends_on:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8081/api/v1/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -59,6 +69,25 @@ services:
     depends_on:
       - backend
 
+  test-app:
+    build:
+      context: ./test-app
+      dockerfile: Dockerfile
+    container_name: ratelimiter-test-app
+    env_file:
+      - ./test-app/.env
+    environment:
+      PORT: 8090
+    ports: []
+    volumes:
+      - test_app_data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8090/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
   gateway:
     image: nginx:1.27-alpine
     container_name: ratelimiter-gateway
@@ -69,6 +98,8 @@ services:
     depends_on:
       - backend
       - dashboard
+      - test-app
 
 volumes:
   redis_data:
+  test_app_data:

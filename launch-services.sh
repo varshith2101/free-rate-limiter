@@ -26,13 +26,12 @@ NC='\033[0m' # No Color
 
 # Configuration
 COMPOSE_CMD=""
-JAVA_VERSION="21"
 NODE_VERSION="18"
 BACKEND_PORT="8081"
 FRONTEND_PORT="3000"
 DASHBOARD_PORT="3000"
-POSTGRES_PORT="5432"
 REDIS_PORT="6379"
+TEST_APP_PORT="8090"
 
 ################################################################################
 # Utility Functions
@@ -164,6 +163,16 @@ cmd_docker_up() {
             print_warning "Review and update .env with your configuration"
         fi
     fi
+
+    # Create test-app/.env if needed
+    if [ ! -f "$BASE_DIR/test-app/.env" ]; then
+        if [ -f "$BASE_DIR/test-app/.env.example" ]; then
+            print_warning "test-app/.env file not found, creating from template..."
+            cp "$BASE_DIR/test-app/.env.example" "$BASE_DIR/test-app/.env"
+            print_success "Created test-app/.env file"
+            print_warning "Review and update test-app/.env with your configuration"
+        fi
+    fi
     
     # Build and start
     print_info "Building and starting services..."
@@ -174,12 +183,18 @@ cmd_docker_up() {
         print_error "Failed to start services"
         return 1
     fi
+
+    # Refresh gateway upstream DNS mappings after backend recreation.
+    # Nginx resolves upstream names at start, so stale containers can keep old IPs.
+    if ! $COMPOSE_CMD restart gateway > /dev/null 2>&1; then
+        print_warning "Could not restart gateway; continuing"
+    fi
     
     print_success "Services started"
     echo ""
     
     # Wait for backend via gateway (single entrypoint)
-    if ! wait_for_service "http://localhost/actuator/health" "Backend API" 120; then
+    if ! wait_for_service "http://localhost/api/v1/health" "Backend API" 120; then
         print_error "Backend failed to start. Checking logs..."
         $COMPOSE_CMD logs backend | tail -50
         return 1
@@ -292,8 +307,12 @@ cmd_docker_restart() {
         print_error "Failed to restart services"
         return 1
     fi
+
+    if ! $COMPOSE_CMD restart gateway > /dev/null 2>&1; then
+        print_warning "Could not restart gateway; continuing"
+    fi
     
-    wait_for_service "http://localhost:$BACKEND_PORT/actuator/health" "Backend API" 60
+    wait_for_service "http://localhost/api/v1/health" "Backend API" 60
     return 0
 }
 
@@ -306,15 +325,6 @@ cmd_local_setup() {
     
     local missing=0
     
-    # Check Java
-    if check_command java; then
-        java_version=$(java -version 2>&1 | grep -E 'version' | sed 's/.*version "\([^"]*\)".*/\1/' | head -1)
-        print_success "Java $java_version found"
-    else
-        print_error "Java not found (required: Java 21+)"
-        missing=1
-    fi
-    
     # Check Node
     if check_command node; then
         node_version=$(node --version)
@@ -324,21 +334,6 @@ cmd_local_setup() {
         missing=1
     fi
     
-    # Check Maven
-    if check_command mvn; then
-        mvn_version=$(mvn --version 2>&1 | head -1)
-        print_success "Maven installed: $mvn_version"
-    else
-        print_error "Maven not found"
-        missing=1
-    fi
-    
-    # Check PostgreSQL
-    if check_command psql; then
-        print_success "PostgreSQL client found"
-    else
-        print_warning "PostgreSQL client not found (optional if using Docker)"
-    fi
     
     # Check Redis
     if check_command redis-cli; then
@@ -365,34 +360,17 @@ cmd_local_backend_only() {
     if ! cmd_local_setup; then
         return 1
     fi
-    
-    # Check if database is running
-    if ! check_port_available $POSTGRES_PORT "PostgreSQL"; then
-        print_warning "PostgreSQL already running on port $POSTGRES_PORT"
-    else
-        print_info "Starting PostgreSQL and Redis in Docker..."
-        if ! setup_compose_cmd; then
-            print_error "Docker Compose required for database/redis"
-            return 1
-        fi
-        
-        cd "$BASE_DIR"
-        $COMPOSE_CMD up -d postgres redis
-        sleep 5
-        print_success "Database services started"
-    fi
-    
-    # Start backend
-    print_info "Building and starting Spring Boot backend..."
+
+    print_info "Installing backend dependencies..."
     cd "$BASE_DIR/ratelimiter"
-    
-    if ! mvn clean install -DskipTests; then
-        print_error "Maven build failed"
+
+    if ! npm install; then
+        print_error "npm install failed"
         return 1
     fi
-    
-    print_success "Backend started on http://localhost:$BACKEND_PORT"
-    wait_for_service "http://localhost:$BACKEND_PORT/actuator/health" "Backend API"
+
+    print_success "Starting backend on http://localhost:$BACKEND_PORT"
+    npm run dev
     
     return 0
 }
@@ -431,36 +409,43 @@ cmd_local_full() {
     if ! cmd_local_setup; then
         return 1
     fi
-    
-    # Start database services in background
-    if setup_compose_cmd > /dev/null 2>&1; then
-        print_info "Starting PostgreSQL and Redis..."
-        cd "$BASE_DIR"
-        
-        if ! check_port_available $POSTGRES_PORT "PostgreSQL"; then
-            print_warning "PostgreSQL already running"
-        else
-            $COMPOSE_CMD up -d postgres redis
-            sleep 5
-        fi
-    else
-        print_warning "Docker Compose not available, assuming PostgreSQL/Redis are running"
-    fi
-    
+
     # Start backend in background
     print_info "Starting backend (in background)..."
     cd "$BASE_DIR/ratelimiter"
-    
-    # Check if already running
+
     if check_port_available $BACKEND_PORT "Backend"; then
-        mvn spring-boot:run &
+        if ! npm install > /dev/null 2>&1; then
+            print_error "Failed to install backend dependencies"
+            return 1
+        fi
+        npm run dev &
         BACKEND_PID=$!
-        
-        if wait_for_service "http://localhost:$BACKEND_PORT/actuator/health" "Backend API" 60; then
+
+        if wait_for_service "http://localhost:$BACKEND_PORT/api/v1/health" "Backend API" 60; then
             print_success "Backend started (PID: $BACKEND_PID)"
         fi
     else
         print_warning "Backend already running on port $BACKEND_PORT"
+    fi
+
+    # Start test app in background
+    print_info "Starting test app (in background)..."
+    cd "$BASE_DIR/test-app"
+
+    if check_port_available $TEST_APP_PORT "Test App"; then
+        if ! npm install > /dev/null 2>&1; then
+            print_error "Failed to install test app dependencies"
+            return 1
+        fi
+        npm run dev &
+        TEST_APP_PID=$!
+
+        if wait_for_service "http://localhost:$TEST_APP_PORT/health" "Test App" 60; then
+            print_success "Test app started (PID: $TEST_APP_PID)"
+        fi
+    else
+        print_warning "Test app already running on port $TEST_APP_PORT"
     fi
     
     # Start frontend
@@ -492,7 +477,7 @@ cmd_health_check() {
         print_warning "Backend API not responding on port $BACKEND_PORT"
         errors=$((errors + 1))
     else
-        if curl -s -f "http://localhost:$BACKEND_PORT/actuator/health" > /dev/null 2>&1; then
+        if curl -s -f "http://localhost:$BACKEND_PORT/api/v1/health" > /dev/null 2>&1; then
             print_success "Backend API healthy"
         else
             print_error "Backend API unhealthy"
@@ -507,17 +492,23 @@ cmd_health_check() {
         print_success "Frontend responding on port $DASHBOARD_PORT"
     fi
     
-    # Check database ports
-    if ! check_port_available $POSTGRES_PORT "PostgreSQL"; then
-        print_success "PostgreSQL running on port $POSTGRES_PORT"
-    else
-        print_warning "PostgreSQL not found on port $POSTGRES_PORT"
-    fi
-    
     if ! check_port_available $REDIS_PORT "Redis"; then
         print_success "Redis running on port $REDIS_PORT"
     else
         print_warning "Redis not found on port $REDIS_PORT"
+    fi
+
+    # Check test app
+    if check_port_available $TEST_APP_PORT "Test App"; then
+        print_warning "Test app not responding on port $TEST_APP_PORT"
+        errors=$((errors + 1))
+    else
+        if curl -s -f "http://localhost:$TEST_APP_PORT/health" > /dev/null 2>&1; then
+            print_success "Test app healthy"
+        else
+            print_error "Test app unhealthy"
+            errors=$((errors + 1))
+        fi
     fi
     
     echo ""
@@ -541,12 +532,12 @@ display_access_info() {
     echo -e "${GREEN}Web Interfaces:${NC}"
     echo "  Dashboard:     ${CYAN}http://localhost:3000${NC}"
     echo "  Backend API:   ${CYAN}http://localhost:8081${NC}"
-    echo "  Health Check:  ${CYAN}http://localhost:8081/actuator/health${NC}"
-    echo "  Metrics:       ${CYAN}http://localhost:8081/actuator/prometheus${NC}"
+    echo "  Health Check:  ${CYAN}http://localhost:8081/api/v1/health${NC}"
+    echo "  Test App:      ${CYAN}http://localhost/test-app/${NC}"
+    echo "  Test App API:  ${CYAN}http://localhost/test-app/api/articles${NC}"
     echo ""
     
-    echo -e "${GREEN}Database Credentials:${NC}"
-    echo "  PostgreSQL:    localhost:5432 (user: ratelimiter)"
+    echo -e "${GREEN}Cache:${NC}"
     echo "  Redis:         localhost:6379"
     echo ""
 }
@@ -562,15 +553,15 @@ ${CYAN}DOCKER COMPOSE COMMANDS:${NC}
   up              Start all services with Docker Compose
   down            Stop all services
   status          Show service status
-  logs [service]  View service logs (service: postgres, redis, backend, dashboard)
+  logs [service]  View service logs (service: redis, backend, dashboard, test-app, gateway)
   restart         Restart services
   clean           Remove containers, networks, and volumes
 
 ${CYAN}LOCAL DEVELOPMENT COMMANDS:${NC}
   setup           Check local development environment
-  backend         Start backend only (requires PostgreSQL + Redis in Docker)
+  backend         Start backend only
   frontend        Start frontend only (dev server on port 3000)
-  full            Start all services locally (backend + frontend)
+  full            Start all services locally (backend + dashboard + test-app)
 
 ${CYAN}UTILITY COMMANDS:${NC}
   health          Check health of running services
@@ -598,6 +589,7 @@ ${CYAN}EXAMPLES:${NC}
 ${CYAN}ENVIRONMENT VARIABLES:${NC}
   BACKEND_PORT    Backend port (default: 8081)
   FRONTEND_PORT   Frontend port (default: 3000)
+  TEST_APP_PORT   Test app port (default: 8090)
 
 EOF
 }
