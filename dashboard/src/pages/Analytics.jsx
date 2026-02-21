@@ -229,7 +229,7 @@ function StatCard({ label, value, icon: Icon, color }) {
   };
 
   return (
-    <div className="bg-slate-800/50 border border-slate-700 rounded-lg">
+    <div className="neo-card">
       <div className="p-5">
         <div className="flex items-center">
           <div className={`flex-shrink-0 rounded-md p-3 ${colorClasses[color]}`}>

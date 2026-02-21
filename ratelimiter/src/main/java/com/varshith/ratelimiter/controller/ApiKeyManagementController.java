@@ -43,7 +43,7 @@ public class ApiKeyManagementController {
     public ResponseEntity<Void> deleteApiKey(
             @PathVariable UUID tenantId,
             @PathVariable UUID apiKeyId) {
-        apiKeyManagementService.deactivateApiKey(tenantId, apiKeyId);
+        apiKeyManagementService.deleteApiKey(tenantId, apiKeyId);
         return ResponseEntity.noContent().build();
     }
 }

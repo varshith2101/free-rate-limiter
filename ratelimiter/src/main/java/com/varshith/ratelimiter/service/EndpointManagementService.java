@@ -152,8 +152,12 @@ public class EndpointManagementService {
 
         // Also delete associated configs
         List<RateLimitConfig> configs = configRepository.findByEndpointId(endpointId);
+        for (RateLimitConfig config : configs) {
+            logRepository.deleteByConfigId(config.getId());
+        }
         configRepository.deleteAll(configs);
 
+        logRepository.deleteByEndpointId(endpointId);
         endpointRepository.deleteById(endpointId);
     }
 
@@ -226,11 +230,11 @@ public class EndpointManagementService {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime last24h = now.minusDays(1);
 
-        long totalRequests = logRepository.countByTenantIdAndTimestampBetween(
+        long totalRequests = logRepository.countByEndpointIdAndTimestampBetween(
                 endpointId, last24h, now
         );
 
-        long blockedRequests = logRepository.countBlockedByTenantIdAndTimestampBetween(
+        long blockedRequests = logRepository.countBlockedByEndpointIdAndTimestampBetween(
                 endpointId, last24h, now
         );
 

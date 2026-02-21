@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -130,19 +132,27 @@ public class ManagementController {
     public ResponseEntity<AnalyticsResponse> getAnalytics(
             @PathVariable UUID tenantId,
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime start,
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime end) {
 
         // Default to last 24 hours if not specified
+        ZoneId ist = ZoneId.of("Asia/Kolkata");
+        LocalDateTime startLocal;
+        LocalDateTime endLocal;
+
         if (start == null) {
-            start = LocalDateTime.now(java.time.ZoneId.of("Asia/Kolkata")).minusDays(1);
+            startLocal = LocalDateTime.now(ist).minusDays(1);
+        } else {
+            startLocal = start.atZoneSameInstant(ist).toLocalDateTime();
         }
         if (end == null) {
-            end = LocalDateTime.now(java.time.ZoneId.of("Asia/Kolkata"));
+            endLocal = LocalDateTime.now(ist);
+        } else {
+            endLocal = end.atZoneSameInstant(ist).toLocalDateTime();
         }
 
-        AnalyticsResponse analytics = analyticsService.getAnalytics(tenantId, start, end);
+        AnalyticsResponse analytics = analyticsService.getAnalytics(tenantId, startLocal, endLocal);
         return ResponseEntity.ok(analytics);
     }
 

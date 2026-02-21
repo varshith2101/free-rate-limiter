@@ -5,6 +5,7 @@ import com.varshith.ratelimiter.model.Tenant;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -82,6 +83,20 @@ public interface RateLimitLogRepository extends JpaRepository<RateLimitLog, UUID
         @Param("end") LocalDateTime end
     );
 
+    @Query("SELECT COUNT(l) FROM RateLimitLog l WHERE l.endpoint.id = :endpointId AND l.timestamp BETWEEN :start AND :end")
+    long countByEndpointIdAndTimestampBetween(
+        @Param("endpointId") UUID endpointId,
+        @Param("start") LocalDateTime start,
+        @Param("end") LocalDateTime end
+    );
+
+    @Query("SELECT COUNT(l) FROM RateLimitLog l WHERE l.endpoint.id = :endpointId AND l.allowed = false AND l.timestamp BETWEEN :start AND :end")
+    long countBlockedByEndpointIdAndTimestampBetween(
+        @Param("endpointId") UUID endpointId,
+        @Param("start") LocalDateTime start,
+        @Param("end") LocalDateTime end
+    );
+
     /**
      * Get request counts grouped by endpoint.
      *
@@ -143,4 +158,12 @@ public interface RateLimitLogRepository extends JpaRepository<RateLimitLog, UUID
      * @param before Delete logs before this time
      */
     void deleteByTimestampBefore(LocalDateTime before);
+
+    @Modifying
+    @Query("DELETE FROM RateLimitLog l WHERE l.config.id = :configId")
+    void deleteByConfigId(@Param("configId") UUID configId);
+
+    @Modifying
+    @Query("DELETE FROM RateLimitLog l WHERE l.endpoint.id = :endpointId")
+    void deleteByEndpointId(@Param("endpointId") UUID endpointId);
 }

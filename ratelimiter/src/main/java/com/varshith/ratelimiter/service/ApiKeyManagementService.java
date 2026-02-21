@@ -59,7 +59,7 @@ public class ApiKeyManagementService {
     }
 
     @Transactional
-    public void deactivateApiKey(UUID tenantId, UUID apiKeyId) {
+    public void deleteApiKey(UUID tenantId, UUID apiKeyId) {
         Tenant tenant = getTenantOrThrow(tenantId);
         ApiKey apiKey = apiKeyRepository.findById(apiKeyId)
                 .orElseThrow(() -> new RuntimeException("API key not found"));
@@ -68,8 +68,7 @@ public class ApiKeyManagementService {
             throw new RuntimeException("Unauthorized");
         }
 
-        apiKey.setIsActive(false);
-        apiKeyRepository.save(apiKey);
+        apiKeyRepository.delete(apiKey);
     }
 
     private Tenant getTenantOrThrow(UUID tenantId) {

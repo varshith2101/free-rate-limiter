@@ -7,6 +7,7 @@ import com.varshith.ratelimiter.model.RateLimitConfig;
 import com.varshith.ratelimiter.model.Tenant;
 import com.varshith.ratelimiter.repository.EndpointRepository;
 import com.varshith.ratelimiter.repository.RateLimitConfigRepository;
+import com.varshith.ratelimiter.repository.RateLimitLogRepository;
 import com.varshith.ratelimiter.repository.TenantRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,14 +25,17 @@ public class RateLimitConfigManagementService {
     private final RateLimitConfigRepository configRepository;
     private final TenantRepository tenantRepository;
     private final EndpointRepository endpointRepository;
+    private final RateLimitLogRepository logRepository;
 
     public RateLimitConfigManagementService(
             RateLimitConfigRepository configRepository,
             TenantRepository tenantRepository,
-            EndpointRepository endpointRepository) {
+            EndpointRepository endpointRepository,
+            RateLimitLogRepository logRepository) {
         this.configRepository = configRepository;
         this.tenantRepository = tenantRepository;
         this.endpointRepository = endpointRepository;
+        this.logRepository = logRepository;
     }
 
     @Transactional
@@ -78,8 +82,8 @@ public class RateLimitConfigManagementService {
             throw new RuntimeException("Unauthorized");
         }
 
-        config.setIsActive(false);
-        configRepository.save(config);
+        logRepository.deleteByConfigId(configId);
+        configRepository.delete(config);
     }
 
     private Tenant getTenant(UUID tenantId) {

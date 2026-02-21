@@ -62,6 +62,42 @@ print_info() {
     echo -e "${CYAN}ℹ $1${NC}"
 }
 
+resolve_host() {
+    local host=$1
+    if command -v getent >/dev/null 2>&1; then
+        getent hosts "$host" >/dev/null 2>&1
+        return $?
+    fi
+    if command -v nslookup >/dev/null 2>&1; then
+        nslookup "$host" >/dev/null 2>&1
+        return $?
+    fi
+    if command -v dig >/dev/null 2>&1; then
+        dig +short "$host" | grep -q .
+        return $?
+    fi
+    return 1
+}
+
+check_docker_registry_access() {
+    local registry_host="registry-1.docker.io"
+    local url="https://$registry_host/v2/"
+
+    if ! resolve_host "$registry_host"; then
+        print_error "DNS resolution failed for $registry_host"
+        return 1
+    fi
+
+    if command -v curl >/dev/null 2>&1; then
+        if ! curl -sS --connect-timeout 5 --max-time 10 -I "$url" >/dev/null 2>&1; then
+            print_error "Unable to reach Docker registry at $url"
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
 check_command() {
     if ! command -v "$1" &> /dev/null; then
         return 1
@@ -154,7 +190,18 @@ cmd_docker_up() {
     
     print_success "Using: $COMPOSE_CMD"
     echo ""
-    
+
+    # Preflight registry connectivity
+    if ! check_docker_registry_access; then
+        print_warning "Docker registry is unreachable from this machine."
+        print_info "Common fixes:"
+        print_info "1) If you're behind a corporate proxy, configure Docker Desktop > Settings > Resources > Proxies"
+        print_info "2) Set HTTPS proxy env vars for Docker Desktop or your shell (HTTPS_PROXY/NO_PROXY)"
+        print_info "3) Check your DNS or VPN settings and try again"
+        print_info "You can also run: docker info | grep -i 'proxy' to see current Docker proxy settings"
+        return 1
+    fi
+
     # Create .env if needed
     if [ ! -f "$BASE_DIR/.env" ]; then
         if [ -f "$BASE_DIR/.env.example" ]; then

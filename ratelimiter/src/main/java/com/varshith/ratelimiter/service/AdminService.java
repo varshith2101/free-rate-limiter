@@ -11,6 +11,7 @@ import com.varshith.ratelimiter.model.Tenant;
 import com.varshith.ratelimiter.repository.ApiKeyRepository;
 import com.varshith.ratelimiter.repository.EndpointRepository;
 import com.varshith.ratelimiter.repository.RateLimitConfigRepository;
+import com.varshith.ratelimiter.repository.RateLimitLogRepository;
 import com.varshith.ratelimiter.repository.TenantRepository;
 import com.varshith.ratelimiter.util.ApiKeyGenerator;
 import org.slf4j.Logger;
@@ -43,6 +44,7 @@ public class AdminService {
     private final TenantRepository tenantRepository;
     private final ApiKeyRepository apiKeyRepository;
     private final RateLimitConfigRepository configRepository;
+    private final RateLimitLogRepository logRepository;
     private final BackendLinkService backendLinkService;
     private final EndpointRepository endpointRepository;
 
@@ -50,11 +52,13 @@ public class AdminService {
             TenantRepository tenantRepository,
             ApiKeyRepository apiKeyRepository,
             RateLimitConfigRepository configRepository,
+            RateLimitLogRepository logRepository,
             BackendLinkService backendLinkService,
             EndpointRepository endpointRepository) {
         this.tenantRepository = tenantRepository;
         this.apiKeyRepository = apiKeyRepository;
         this.configRepository = configRepository;
+        this.logRepository = logRepository;
         this.backendLinkService = backendLinkService;
         this.endpointRepository = endpointRepository;
     }
@@ -285,8 +289,8 @@ public class AdminService {
         log.info("Deleting rate limit config: {}", configId);
 
         RateLimitConfig config = getConfig(configId);
-        config.setIsActive(false);
-        configRepository.save(config);
+        logRepository.deleteByConfigId(configId);
+        configRepository.delete(config);
 
         log.info("Rate limit config deleted: {}", configId);
     }

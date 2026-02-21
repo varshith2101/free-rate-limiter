@@ -6,6 +6,7 @@ import com.varshith.ratelimiter.model.ApiKey;
 import com.varshith.ratelimiter.model.RateLimitLog;
 import com.varshith.ratelimiter.model.RateLimitConfig;
 import com.varshith.ratelimiter.repository.ApiKeyRepository;
+import com.varshith.ratelimiter.repository.EndpointRepository;
 import com.varshith.ratelimiter.repository.RateLimitConfigRepository;
 import com.varshith.ratelimiter.repository.RateLimitLogRepository;
 import com.varshith.ratelimiter.service.strategy.RateLimitStrategy;
@@ -40,6 +41,7 @@ public class RateLimiterService {
     private final ApiKeyRepository apiKeyRepository;
     private final RateLimitConfigRepository configRepository;
     private final RateLimitLogRepository logRepository;
+    private final EndpointRepository endpointRepository;
     private final Map<String, RateLimitStrategy> strategyMap;
 
     /**
@@ -52,10 +54,12 @@ public class RateLimiterService {
             ApiKeyRepository apiKeyRepository,
             RateLimitConfigRepository configRepository,
             RateLimitLogRepository logRepository,
+            EndpointRepository endpointRepository,
             Map<String, RateLimitStrategy> strategyMap) {
         this.apiKeyRepository = apiKeyRepository;
         this.configRepository = configRepository;
         this.logRepository = logRepository;
+        this.endpointRepository = endpointRepository;
         this.strategyMap = strategyMap;
 
         log.info("RateLimiterService initialized with {} strategies: {}",
@@ -93,7 +97,7 @@ public class RateLimiterService {
         if (config == null) {
             log.debug("No rate limit config found for tenant: {}, endpoint: {}, method: {}. Skipping.",
                 tenantId, endpoint, method);
-            return RateLimitResponse.builder()
+            RateLimitResponse response = RateLimitResponse.builder()
                 .allowed(true)
                 .remaining(0)
                 .limit(0)
@@ -102,6 +106,8 @@ public class RateLimiterService {
                 .algorithm("NONE")
                 .matchedPattern(null)
                 .build();
+            persistLog(apiKey, null, endpoint, method, response);
+            return response;
         }
 
         // Step 3: Build Redis key
@@ -125,15 +131,25 @@ public class RateLimiterService {
     private void persistLog(ApiKey apiKey, RateLimitConfig config, String endpoint, String method, RateLimitResponse response) {
         RateLimitLog logEntry = new RateLimitLog();
         logEntry.setTenant(apiKey.getTenant());
-        logEntry.setEndpoint(config.getEndpoint());
-        logEntry.setConfig(config);
+        if (config != null) {
+            logEntry.setConfig(config);
+            if (config.getEndpoint() != null) {
+                logEntry.setEndpoint(config.getEndpoint());
+            } else {
+                logEntry.setEndpoint(findEndpointForLog(apiKey.getTenant().getId(), endpoint, method));
+            }
+        } else {
+            logEntry.setEndpoint(findEndpointForLog(apiKey.getTenant().getId(), endpoint, method));
+            logEntry.setConfig(null);
+        }
         logEntry.setTimestamp(LocalDateTime.now(ZoneId.of("Asia/Kolkata")));
-        logEntry.setIdentifierType(config.getLimitBy());
-        logEntry.setClientIdentifier(resolveIdentifier(config.getLimitBy(), apiKey));
+        RateLimitConfig.LimitBy limitBy = config != null ? config.getLimitBy() : RateLimitConfig.LimitBy.API_KEY;
+        logEntry.setIdentifierType(limitBy);
+        logEntry.setClientIdentifier(resolveIdentifier(limitBy, apiKey));
         logEntry.setAllowed(response.isAllowed());
         logEntry.setMaxRequests(response.getLimit());
         logEntry.setCurrentCount(Math.max(0, response.getLimit() - response.getRemaining()));
-        logEntry.setAlgorithm(config.getAlgorithm());
+        logEntry.setAlgorithm(config != null ? config.getAlgorithm() : null);
         logEntry.setHttpMethod(method);
         logEntry.setRequestPath(endpoint);
 
@@ -145,6 +161,43 @@ public class RateLimiterService {
             return apiKey.getApiKey();
         }
         return "unknown";
+    }
+
+    private com.varshith.ratelimiter.model.Endpoint findEndpointForLog(UUID tenantId, String endpoint, String method) {
+        if (endpoint == null) {
+            return null;
+        }
+        return endpointRepository.findByTenantId(tenantId).stream()
+            .filter(ep -> pathsMatch(ep.getPath(), endpoint) && methodsMatch(ep.getHttpMethod(), method))
+            .findFirst()
+            .orElse(null);
+    }
+
+    private boolean methodsMatch(String storedMethod, String method) {
+        if (storedMethod == null || storedMethod.isBlank() || "*".equals(storedMethod)) {
+            return true;
+        }
+        if (method == null) {
+            return false;
+        }
+        return storedMethod.equalsIgnoreCase(method);
+    }
+
+    private boolean pathsMatch(String storedPath, String requestPath) {
+        String left = normalizePath(storedPath);
+        String right = normalizePath(requestPath);
+        return left.equals(right);
+    }
+
+    private String normalizePath(String path) {
+        if (path == null || path.isBlank()) {
+            return "/";
+        }
+        String normalized = path.startsWith("/") ? path : "/" + path;
+        if (normalized.length() > 1 && normalized.endsWith("/")) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        return normalized;
     }
 
     /**
