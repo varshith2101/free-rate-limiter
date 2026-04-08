@@ -6,11 +6,13 @@ import com.varshith.ratelimiter.repository.BackendLinkRepository;
 import com.varshith.ratelimiter.util.AuthUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -86,7 +88,7 @@ public class BackendLinkService {
         try {
             String token = backendLink.getVerificationToken();
             String verifyUrl = buildVerifyUrl(backendLink.getBackendUrl(), token);
-            String response = restTemplate.getForObject(verifyUrl, String.class);
+            String response = fetchVerificationResponse(verifyUrl, backendLink.getBackendUrl(), token);
 
             if (response == null || !response.contains(token)) {
                 throw new InvalidConfigException("Verification failed: token not found in response");
@@ -95,10 +97,63 @@ public class BackendLinkService {
             // If successful, mark as verified
             backendLink.setIsVerified(true);
             backendLinkRepository.save(backendLink);
+        } catch (InvalidConfigException ex) {
+            backendLinkRepository.save(backendLink);
+            throw ex;
         } catch (Exception e) {
             backendLinkRepository.save(backendLink);
             throw new InvalidConfigException("Failed to verify backend. Ensure the endpoint is accessible: "
                 + buildVerifyUrl(backendLink.getBackendUrl(), backendLink.getVerificationToken()));
+        }
+    }
+
+    private String fetchVerificationResponse(String verifyUrl, String backendUrl, String token) {
+        try {
+            return restTemplate.getForObject(verifyUrl, String.class);
+        } catch (RestClientException primaryError) {
+            Optional<String> dockerFallbackUrl = buildDockerHostFallbackUrl(backendUrl, token);
+            if (dockerFallbackUrl.isEmpty()) {
+                throw new InvalidConfigException("Failed to reach verification endpoint: " + verifyUrl, primaryError);
+            }
+
+            try {
+                return restTemplate.getForObject(dockerFallbackUrl.get(), String.class);
+            } catch (RestClientException fallbackError) {
+                throw new InvalidConfigException(
+                    "Failed to reach verification endpoint. Tried: " + verifyUrl + " and " + dockerFallbackUrl.get(),
+                    fallbackError
+                );
+            }
+        }
+    }
+
+    private Optional<String> buildDockerHostFallbackUrl(String backendUrl, String token) {
+        try {
+            java.net.URI uri = new java.net.URI(backendUrl);
+            String host = uri.getHost();
+            if (host == null) {
+                return Optional.empty();
+            }
+
+            boolean isHostLocal = "localhost".equalsIgnoreCase(host)
+                || "127.0.0.1".equals(host)
+                || "::1".equals(host);
+            if (!isHostLocal) {
+                return Optional.empty();
+            }
+
+            java.net.URI fallbackUri = new java.net.URI(
+                uri.getScheme(),
+                uri.getUserInfo(),
+                "host.docker.internal",
+                uri.getPort(),
+                uri.getPath(),
+                uri.getQuery(),
+                uri.getFragment()
+            );
+            return Optional.of(buildVerifyUrl(fallbackUri.toString(), token));
+        } catch (Exception ignored) {
+            return Optional.empty();
         }
     }
     

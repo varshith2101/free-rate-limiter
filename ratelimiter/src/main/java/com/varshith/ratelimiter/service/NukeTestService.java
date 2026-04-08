@@ -2,8 +2,10 @@ package com.varshith.ratelimiter.service;
 
 import com.varshith.ratelimiter.dto.NukeTestRequest;
 import com.varshith.ratelimiter.dto.NukeTestStatusResponse;
+import com.varshith.ratelimiter.exception.InvalidConfigException;
 import com.varshith.ratelimiter.model.Endpoint;
 import com.varshith.ratelimiter.repository.EndpointRepository;
+import com.varshith.ratelimiter.repository.RateLimitConfigRepository;
 import com.varshith.ratelimiter.repository.TenantRepository;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +21,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -33,12 +36,17 @@ public class NukeTestService {
 
     private final EndpointRepository endpointRepository;
     private final TenantRepository tenantRepository;
+    private final RateLimitConfigRepository rateLimitConfigRepository;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ConcurrentHashMap<UUID, NukeTestRun> runs = new ConcurrentHashMap<>();
 
-    public NukeTestService(EndpointRepository endpointRepository, TenantRepository tenantRepository) {
+    public NukeTestService(
+            EndpointRepository endpointRepository,
+            TenantRepository tenantRepository,
+            RateLimitConfigRepository rateLimitConfigRepository) {
         this.endpointRepository = endpointRepository;
         this.tenantRepository = tenantRepository;
+        this.rateLimitConfigRepository = rateLimitConfigRepository;
     }
 
     public UUID startTest(UUID tenantId, UUID endpointId, NukeTestRequest request) {
@@ -53,8 +61,15 @@ public class NukeTestService {
             throw new RuntimeException("Unauthorized");
         }
 
+        if (rateLimitConfigRepository.findActiveByEndpointId(endpointId).isEmpty()) {
+            throw new InvalidConfigException("Cannot run nuke test: no active rate limit configuration for this endpoint");
+        }
+
         UUID testId = UUID.randomUUID();
-        NukeTestRun run = new NukeTestRun(testId, endpoint.getFullUrl(), endpoint.getHttpMethod(),
+        String endpointUrl = endpoint.getFullUrl();
+        String requestUrl = resolveExecutionUrl(endpointUrl);
+
+        NukeTestRun run = new NukeTestRun(testId, endpointUrl, requestUrl, endpoint.getHttpMethod(),
                 request.getTotalRequests(), request.getConcurrency());
         runs.put(testId, run);
 
@@ -82,7 +97,7 @@ public class NukeTestService {
             executor.submit(() -> {
                 try {
                     ResponseEntity<String> response = restTemplate.exchange(
-                            run.endpointUrl,
+                            run.requestUrl,
                             run.resolveMethod(),
                             run.buildEntity(),
                             String.class
@@ -93,7 +108,7 @@ public class NukeTestService {
                     int status = ex.getStatusCode().value();
                     run.record(status);
                 } catch (Exception ex) {
-                    run.recordError(ex.getClass().getSimpleName());
+                    run.recordError(ex.getClass().getSimpleName() + " at " + run.requestUrl);
                 } finally {
                     latch.countDown();
                 }
@@ -111,9 +126,45 @@ public class NukeTestService {
         }
     }
 
+    private String resolveExecutionUrl(String endpointUrl) {
+        Optional<String> dockerFallback = buildDockerHostFallbackUrl(endpointUrl);
+        return dockerFallback.orElse(endpointUrl);
+    }
+
+    private Optional<String> buildDockerHostFallbackUrl(String endpointUrl) {
+        try {
+            java.net.URI uri = new java.net.URI(endpointUrl);
+            String host = uri.getHost();
+            if (host == null) {
+                return Optional.empty();
+            }
+
+            boolean isHostLocal = "localhost".equalsIgnoreCase(host)
+                    || "127.0.0.1".equals(host)
+                    || "::1".equals(host);
+            if (!isHostLocal) {
+                return Optional.empty();
+            }
+
+            java.net.URI fallbackUri = new java.net.URI(
+                    uri.getScheme(),
+                    uri.getUserInfo(),
+                    "host.docker.internal",
+                    uri.getPort(),
+                    uri.getPath(),
+                    uri.getQuery(),
+                    uri.getFragment()
+            );
+            return Optional.of(fallbackUri.toString());
+        } catch (Exception ignored) {
+            return Optional.empty();
+        }
+    }
+
     private static class NukeTestRun {
         private final UUID testId;
         private final String endpointUrl;
+        private final String requestUrl;
         private final String httpMethod;
         private final int totalRequests;
         private final int concurrency;
@@ -127,9 +178,10 @@ public class NukeTestService {
         private LocalDateTime startedAt;
         private LocalDateTime finishedAt;
 
-        private NukeTestRun(UUID testId, String endpointUrl, String httpMethod, int totalRequests, int concurrency) {
+        private NukeTestRun(UUID testId, String endpointUrl, String requestUrl, String httpMethod, int totalRequests, int concurrency) {
             this.testId = testId;
             this.endpointUrl = endpointUrl;
+            this.requestUrl = requestUrl;
             this.httpMethod = httpMethod;
             this.totalRequests = totalRequests;
             this.concurrency = concurrency;
@@ -138,6 +190,9 @@ public class NukeTestService {
         private void markStarted() {
             startedAt = LocalDateTime.now();
             addLog("Started nuke test: " + totalRequests + " requests with concurrency " + concurrency);
+            if (!endpointUrl.equals(requestUrl)) {
+                addLog("Running from Docker using: " + requestUrl + " (configured: " + endpointUrl + ")");
+            }
         }
 
         private void markFinished() {
@@ -155,7 +210,7 @@ public class NukeTestService {
             } else {
                 errors.incrementAndGet();
             }
-            addLog("Response " + statusCode + " from " + endpointUrl);
+            addLog("Response " + statusCode + " from " + requestUrl);
         }
 
         private void recordError(String message) {

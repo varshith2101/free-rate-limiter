@@ -93,7 +93,18 @@ export default function BackendLinks() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (!response.ok) throw new Error('Verification failed');
+      if (!response.ok) {
+        let message = 'Verification failed';
+        try {
+          const data = await response.json();
+          if (data?.message) {
+            message = data.message;
+          }
+        } catch (_) {
+          // Keep default message when response is not JSON.
+        }
+        throw new Error(message);
+      }
       fetchBackendLinks();
     } catch (err) {
       setError(err.message);
