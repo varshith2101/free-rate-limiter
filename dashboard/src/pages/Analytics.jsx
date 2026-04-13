@@ -163,7 +163,7 @@ export default function Analytics() {
               <CartesianGrid strokeDasharray="3 3" stroke="#1b2a1f" />
               <XAxis dataKey="time" stroke="#9aa3a0" />
               <YAxis stroke="#9aa3a0" />
-              <Tooltip contentStyle={{ backgroundColor: '#0a0f0c', borderColor: '#1a2a1f', color: '#e2fbe6' }} />
+              <Tooltip contentStyle={{ backgroundColor: '#fff8f0', borderColor: '#d8b89f', color: '#5b3f31' }} />
               <Legend />
               <Line
                 type="monotone"

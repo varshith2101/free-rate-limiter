@@ -145,9 +145,22 @@ public class AnalyticsService {
             UUID endpointId = (UUID) stat[0];
             Long count = ((Number) stat[1]).longValue();
 
-            var endpoint = endpointRepository.findById(endpointId).orElse(null);
-            String endpointLabel = endpoint != null ? endpoint.getPath() : endpointId.toString();
-            String methodLabel = endpoint != null ? endpoint.getHttpMethod() : "*";
+            var endpoint = endpointId != null
+                    ? endpointRepository.findById(endpointId).orElse(null)
+                    : null;
+            String endpointLabel;
+            String methodLabel;
+
+            if (endpoint != null) {
+                endpointLabel = endpoint.getPath();
+                methodLabel = endpoint.getHttpMethod();
+            } else if (endpointId != null) {
+                endpointLabel = endpointId.toString();
+                methodLabel = "*";
+            } else {
+                endpointLabel = "Unknown endpoint";
+                methodLabel = "*";
+            }
 
             stats.add(AnalyticsResponse.EndpointStat.builder()
                 .endpoint(endpointLabel)

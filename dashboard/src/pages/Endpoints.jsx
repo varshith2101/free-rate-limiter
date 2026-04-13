@@ -83,6 +83,14 @@ export default function Endpoints() {
       return;
     }
 
+    const hasActiveConfig = (nukeEndpoint.rateLimitConfigs || []).some(
+      (config) => config.isActive
+    );
+    if (!hasActiveConfig) {
+      alert('Cannot run nuke test: no active rate limit configuration for this endpoint');
+      return;
+    }
+
     const totalRequests = clampNukeInput(nukeTotal, 2000);
     const concurrency = clampNukeInput(nukeConcurrency, 200);
 
@@ -148,7 +156,12 @@ export default function Endpoints() {
       }, 1000);
     } catch (err) {
       setNukeRunning(false);
-      alert('Failed to start nuke test');
+      const backendMessage =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        'Failed to start nuke test';
+      alert(backendMessage);
     }
   };
 
@@ -366,10 +379,20 @@ export default function Endpoints() {
               </div>
             </div>
 
+            {nukeEndpoint &&
+              !(nukeEndpoint.rateLimitConfigs || []).some((config) => config.isActive) && (
+                <div className="neo-panel p-3 text-sm text-red-300 border border-red-500/30 bg-red-500/10">
+                  No active rate limit config found for this endpoint. Create one before running a nuke test.
+                </div>
+              )}
+
             <div className="flex items-center justify-between">
               <button
                 onClick={runNukeTest}
-                disabled={nukeRunning}
+                disabled={
+                  nukeRunning ||
+                  !(nukeEndpoint.rateLimitConfigs || []).some((config) => config.isActive)
+                }
                 className="inline-flex items-center gap-2 bg-red-500/80 text-white px-4 py-2 rounded-lg hover:bg-red-500 disabled:opacity-50"
               >
                 <Radiation className="h-4 w-4" />

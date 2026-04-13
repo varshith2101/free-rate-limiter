@@ -86,7 +86,7 @@ function App() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-emerald-500/30 border-t-emerald-300 rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-[rgba(171,129,93,0.24)] border-t-[rgba(185,106,69,0.95)] rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-300">Loading...</p>
         </div>
       </div>
@@ -97,7 +97,7 @@ function App() {
     <Router>
       <div className="min-h-screen relative overflow-hidden">
         <div className="pointer-events-none fixed inset-0 z-0">
-          <div className="animate-scanline absolute left-0 right-0 top-0 h-32 bg-gradient-to-b from-emerald-400/0 via-emerald-400/20 to-emerald-400/0" />
+          <div className="animate-steamline absolute left-0 right-0 top-0 h-52 bg-gradient-to-b from-[rgba(185,106,69,0)] via-[rgba(185,106,69,0.16)] to-[rgba(185,106,69,0)]" />
         </div>
         {isAuthenticated ? (
           <>
@@ -133,37 +133,37 @@ function Navigation({ user, onLogout }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <nav className="bg-[#050806]/80 backdrop-blur border-b border-emerald-500/20">
+    <nav className="bg-[rgba(255,248,240,0.84)] backdrop-blur border-b border-[rgba(171,129,93,0.2)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-lime-300 rounded-lg flex items-center justify-center shadow-[0_0_12px_rgba(68,214,44,0.35)]">
-              <span className="text-white font-bold text-sm">RL</span>
+            <div className="w-8 h-8 bg-[rgba(185,106,69,0.9)] rounded-lg flex items-center justify-center shadow-[0_6px_14px_rgba(145,89,58,0.24)]">
+              <span className="text-[#fff8f1] font-bold text-sm">RL</span>
             </div>
-            <h1 className="text-xl font-bold text-white">Rate Limiter</h1>
+            <h1 className="text-xl font-bold text-[rgba(70,47,35,1)]">Rate Limiter</h1>
           </div>
 
           <div className="hidden md:flex items-center gap-8">
-            <a href="/" className="text-gray-300 hover:text-emerald-100 transition">Dashboard</a>
-            <a href="/endpoints" className="text-gray-300 hover:text-emerald-100 transition">Endpoints</a>
-            <a href="/analytics" className="text-gray-300 hover:text-emerald-100 transition">Analytics</a>
-            <a href="/backend-links" className="text-gray-300 hover:text-emerald-100 transition">Backend Links</a>
-            <a href="/setup" className="text-gray-300 hover:text-emerald-100 transition">Setup Tutorial</a>
+            <a href="/" className="text-gray-300 hover:text-[rgba(125,74,48,1)] transition">Dashboard</a>
+            <a href="/endpoints" className="text-gray-300 hover:text-[rgba(125,74,48,1)] transition">Endpoints</a>
+            <a href="/analytics" className="text-gray-300 hover:text-[rgba(125,74,48,1)] transition">Analytics</a>
+            <a href="/backend-links" className="text-gray-300 hover:text-[rgba(125,74,48,1)] transition">Backend Links</a>
+            <a href="/setup" className="text-gray-300 hover:text-[rgba(125,74,48,1)] transition">Setup Tutorial</a>
           </div>
 
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-300 hidden sm:inline">{user?.name}</span>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-lime-400 flex items-center justify-center text-slate-900 font-semibold hover:shadow-lg hover:shadow-emerald-500/30 transition"
+              className="w-10 h-10 rounded-full bg-[rgba(185,106,69,0.92)] flex items-center justify-center text-[#fff8f1] font-semibold hover:bg-[rgba(166,92,58,0.95)] transition"
             >
               {user?.name?.charAt(0).toUpperCase()}
             </button>
             {menuOpen && (
-              <div className="absolute right-4 top-16 bg-[#0b120e] border border-emerald-500/20 rounded-lg shadow-xl z-50">
+              <div className="absolute right-4 top-16 bg-[rgba(255,248,240,0.96)] border border-[rgba(171,129,93,0.22)] rounded-lg shadow-xl z-50">
                 <a
                   href="/api-keys"
-                  className="block w-full text-left px-4 py-2 text-gray-300 hover:text-emerald-100 hover:bg-emerald-500/10 rounded transition"
+                  className="block w-full text-left px-4 py-2 text-gray-300 hover:text-[rgba(125,74,48,1)] hover:bg-[rgba(197,123,87,0.08)] rounded transition"
                   onClick={() => setMenuOpen(false)}
                 >
                   API
@@ -173,7 +173,7 @@ function Navigation({ user, onLogout }) {
                     onLogout();
                     setMenuOpen(false);
                   }}
-                  className="block w-full text-left px-4 py-2 text-gray-300 hover:text-emerald-100 hover:bg-emerald-500/10 rounded transition"
+                  className="block w-full text-left px-4 py-2 text-gray-300 hover:text-[rgba(125,74,48,1)] hover:bg-[rgba(197,123,87,0.08)] rounded transition"
                 >
                   Logout
                 </button>

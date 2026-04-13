@@ -1,4 +1,4 @@
-/* Dark mode animations and effects */
+/* Warm cafe themed animations and effects */
 
 @keyframes fadeIn {
   from {
@@ -24,23 +24,23 @@
 
 @keyframes glow {
   0%, 100% {
-    opacity: 0.8;
+    opacity: 0.7;
   }
   50% {
     opacity: 1;
   }
 }
 
-@keyframes scanline {
+@keyframes steamline {
   0% {
-    transform: translateY(-20%);
+    transform: translateY(12%) scale(0.96);
     opacity: 0;
   }
-  35% {
-    opacity: 0.35;
+  45% {
+    opacity: 0.26;
   }
   100% {
-    transform: translateY(120%);
+    transform: translateY(-120%) scale(1.04);
     opacity: 0;
   }
 }
@@ -57,13 +57,13 @@
   animation: glow 2s ease-in-out infinite;
 }
 
-.animate-scanline {
-  animation: scanline 6s linear infinite;
+.animate-steamline {
+  animation: steamline 8s ease-in-out infinite;
 }
 
 /* Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, #44d62c 0%, #a3ff6a 100%);
+  background: linear-gradient(135deg, #b96a45 0%, #d9a780 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -83,16 +83,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(4, 8, 6, 0.7);
+  background: rgba(235, 220, 204, 0.7);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(68, 214, 44, 0.35);
+  background: rgba(171, 129, 93, 0.35);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(68, 214, 44, 0.6);
+  background: rgba(171, 129, 93, 0.58);
 }
 
 /* Focus ring utilities */
@@ -102,17 +102,17 @@
 }
 
 .focus-ring:focus {
-  outline: 2px solid rgb(68, 214, 44);
+  outline: 2px solid rgb(185, 106, 69);
   outline-offset: 2px;
 }
 
 /* Placeholder styling */
 ::placeholder {
-  color: rgba(148, 163, 184, 0.6);
+  color: rgba(130, 101, 82, 0.62);
 }
 
 /* Selection styling */
 ::selection {
-  background-color: rgba(68, 214, 44, 0.2);
-  color: rgb(255, 255, 255);
+  background-color: rgba(197, 123, 87, 0.25);
+  color: rgb(61, 42, 33);
 }

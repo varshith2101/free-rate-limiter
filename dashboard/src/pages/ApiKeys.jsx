@@ -145,7 +145,7 @@ export default function ApiKeys() {
             type="checkbox"
             checked={neverExpire}
             onChange={(event) => setNeverExpire(event.target.checked)}
-            className="h-4 w-4 rounded border-emerald-500/30 bg-[#0a0f0c] text-emerald-500 focus:ring-emerald-500"
+            className="h-4 w-4 rounded border-[rgba(171,129,93,0.32)] bg-[rgba(255,252,248,0.9)] text-[rgba(185,106,69,1)] focus:ring-[rgba(185,106,69,0.6)]"
           />
           Never expire
         </label>

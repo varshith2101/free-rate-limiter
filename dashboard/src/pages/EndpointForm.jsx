@@ -138,7 +138,7 @@ export default function EndpointForm() {
                 required
                 value={formData.backendLinkId}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md bg-[#0a0f0c]/70 border border-emerald-500/25 text-white shadow-sm focus:border-emerald-400 focus:ring-emerald-400 sm:text-sm px-3 py-2"
+                className="mt-1 block w-full rounded-md bg-[rgba(255,252,248,0.92)] border border-[rgba(171,129,93,0.24)] text-white shadow-sm focus:border-[rgba(185,106,69,0.7)] focus:ring-[rgba(185,106,69,0.45)] sm:text-sm px-3 py-2"
               >
                 {backendLinks.map((link) => (
                   <option key={link.id} value={link.id}>
@@ -168,7 +168,7 @@ export default function EndpointForm() {
               value={formData.path}
               onChange={handleChange}
               placeholder="/api/users"
-              className="mt-1 block w-full rounded-md bg-[#0a0f0c]/70 border border-emerald-500/25 text-white placeholder-gray-500 shadow-sm focus:border-emerald-400 focus:ring-emerald-400 sm:text-sm px-3 py-2"
+              className="mt-1 block w-full rounded-md bg-[rgba(255,252,248,0.92)] border border-[rgba(171,129,93,0.24)] text-white placeholder-gray-500 shadow-sm focus:border-[rgba(185,106,69,0.7)] focus:ring-[rgba(185,106,69,0.45)] sm:text-sm px-3 py-2"
             />
             <p className="mt-1 text-sm text-gray-400">
               Supports wildcards, e.g., /api/users/*
@@ -189,7 +189,7 @@ export default function EndpointForm() {
               required
               value={formData.httpMethod}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md bg-[#0a0f0c]/70 border border-emerald-500/25 text-white shadow-sm focus:border-emerald-400 focus:ring-emerald-400 sm:text-sm px-3 py-2"
+              className="mt-1 block w-full rounded-md bg-[rgba(255,252,248,0.92)] border border-[rgba(171,129,93,0.24)] text-white shadow-sm focus:border-[rgba(185,106,69,0.7)] focus:ring-[rgba(185,106,69,0.45)] sm:text-sm px-3 py-2"
             >
               <option value="*">All Methods (*)</option>
               <option value="GET">GET</option>
@@ -215,7 +215,7 @@ export default function EndpointForm() {
               value={formData.description}
               onChange={handleChange}
               placeholder="What does this endpoint do?"
-              className="mt-1 block w-full rounded-md bg-[#0a0f0c]/70 border border-emerald-500/25 text-white placeholder-gray-500 shadow-sm focus:border-emerald-400 focus:ring-emerald-400 sm:text-sm px-3 py-2"
+              className="mt-1 block w-full rounded-md bg-[rgba(255,252,248,0.92)] border border-[rgba(171,129,93,0.24)] text-white placeholder-gray-500 shadow-sm focus:border-[rgba(185,106,69,0.7)] focus:ring-[rgba(185,106,69,0.45)] sm:text-sm px-3 py-2"
             />
           </div>
 
