@@ -133,14 +133,14 @@ function Navigation({ user, onLogout }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <nav className="bg-[rgba(255,248,240,0.84)] backdrop-blur border-b border-[rgba(171,129,93,0.2)]">
+    <nav className="bg-[rgba(33,27,23,0.84)] backdrop-blur border-b border-[rgba(203,151,113,0.26)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-[rgba(185,106,69,0.9)] rounded-lg flex items-center justify-center shadow-[0_6px_14px_rgba(145,89,58,0.24)]">
               <span className="text-[#fff8f1] font-bold text-sm">RL</span>
             </div>
-            <h1 className="text-xl font-bold text-[rgba(70,47,35,1)]">Rate Limiter</h1>
+            <h1 className="text-xl font-bold text-[rgba(242,226,209,1)]">Rate Limiter</h1>
           </div>
 
           <div className="hidden md:flex items-center gap-8">
@@ -160,7 +160,7 @@ function Navigation({ user, onLogout }) {
               {user?.name?.charAt(0).toUpperCase()}
             </button>
             {menuOpen && (
-              <div className="absolute right-4 top-16 bg-[rgba(255,248,240,0.96)] border border-[rgba(171,129,93,0.22)] rounded-lg shadow-xl z-50">
+              <div className="absolute right-4 top-16 bg-[rgba(38,31,27,0.98)] border border-[rgba(203,151,113,0.32)] rounded-lg shadow-xl z-50">
                 <a
                   href="/api-keys"
                   className="block w-full text-left px-4 py-2 text-gray-300 hover:text-[rgba(125,74,48,1)] hover:bg-[rgba(197,123,87,0.08)] rounded transition"

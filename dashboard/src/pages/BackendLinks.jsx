@@ -8,16 +8,16 @@ export default function BackendLinks() {
   const [showForm, setShowForm] = useState(false);
   const [backendUrl, setBackendUrl] = useState('');
   const [nickname, setNickname] = useState('');
-  const [accentColor, setAccentColor] = useState('#22C55E');
+  const [accentColor, setAccentColor] = useState('#C98861');
   const [error, setError] = useState('');
 
   const colorOptions = [
-    { value: '#22C55E', label: 'Green' },
-    { value: '#4ADE80', label: 'Mint' },
-    { value: '#16A34A', label: 'Forest' },
-    { value: '#84CC16', label: 'Lime' },
-    { value: '#65A30D', label: 'Olive' },
-    { value: '#A3E635', label: 'Neon' },
+    { value: '#C98861', label: 'Copper' },
+    { value: '#D89A73', label: 'Amber Clay' },
+    { value: '#A86A47', label: 'Rust' },
+    { value: '#8A5A3E', label: 'Cocoa' },
+    { value: '#B77A52', label: 'Terracotta' },
+    { value: '#E1A983', label: 'Sand Glow' },
   ];
 
   useEffect(() => {
@@ -61,7 +61,7 @@ export default function BackendLinks() {
       
       setBackendUrl('');
       setNickname('');
-      setAccentColor('#22C55E');
+      setAccentColor('#C98861');
       setShowForm(false);
       fetchBackendLinks();
     } catch (err) {
@@ -209,7 +209,7 @@ export default function BackendLinks() {
 
       {loading ? (
         <div className="text-center py-12">
-          <div className="w-12 h-12 border-4 border-emerald-500/30 border-t-emerald-300 rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-[rgba(203,151,113,0.32)] border-t-[rgba(225,169,131,0.95)] rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-400">Loading backend links...</p>
         </div>
       ) : backendLinks.length === 0 ? (
@@ -221,7 +221,7 @@ export default function BackendLinks() {
           {backendLinks.map((link) => (
             <div
               key={link.id}
-              className="neo-card p-6 hover:border-emerald-400/40 transition"
+              className="neo-card p-6 hover:border-[rgba(224,167,124,0.62)] transition"
             >
               <div className="flex justify-between items-start mb-4">
                 <div>
@@ -236,7 +236,7 @@ export default function BackendLinks() {
                 </div>
                 <div className="flex items-center gap-2">
                   {link.isVerified ? (
-                    <div className="flex items-center gap-1 bg-green-500/10 text-green-400 px-3 py-1 rounded-full">
+                    <div className="flex items-center gap-1 bg-[rgba(201,136,97,0.14)] text-[rgba(230,181,145,1)] px-3 py-1 rounded-full border border-[rgba(203,151,113,0.36)]">
                       <Check className="w-4 h-4" /> Verified
                     </div>
                   ) : (
@@ -250,7 +250,7 @@ export default function BackendLinks() {
                 <div className="neo-panel px-3 py-2">
                   <div>
                     <p className="text-xs text-gray-400">Verification URL</p>
-                    <p className="text-xs text-emerald-300 break-all">
+                    <p className="text-xs text-[rgba(225,169,131,1)] break-all">
                       {link.backendUrl}/.well-known/ratelimiter-verify?token={link.verificationToken}
                     </p>
                   </div>
@@ -265,7 +265,7 @@ export default function BackendLinks() {
                 <div className="flex gap-3">
                   <button
                     onClick={() => handleVerifyLink(link.id)}
-                    className="text-emerald-300 hover:text-emerald-200 transition text-sm flex items-center gap-1"
+                    className="text-[rgba(225,169,131,1)] hover:text-[rgba(242,201,172,1)] transition text-sm flex items-center gap-1"
                   >
                     <RefreshCw className="w-3 h-3" /> Verify
                   </button>

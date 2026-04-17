@@ -103,6 +103,24 @@ Use these to validate configurations and spot hot paths.
 
 Open an endpoint and run a nuke test to simulate load. The test logs results and updates analytics so you can verify behavior under pressure.
 
+## Monitoring
+
+Start the main stack plus the monitoring overlay:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.monitoring.yml up -d
+```
+
+Access:
+- Grafana: http://localhost:3001 (default: `admin` / `admin`)
+- Prometheus: http://localhost:9090
+
+Dashboard panels:
+- HTTP req/s by endpoint: request throughput broken down by endpoint/URI labels.
+- p95/p99 latency: 95th and 99th percentile latency for `POST /api/v1/ratelimit/check`.
+- JVM heap: JVM heap used vs max memory to monitor pressure and headroom.
+- Rate-limit allow vs deny ratio: real-time allowed vs denied share for rate-limit checks.
+
 ## Project Structure
 
 ```

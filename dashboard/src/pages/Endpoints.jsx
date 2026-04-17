@@ -224,23 +224,23 @@ export default function Endpoints() {
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="neo-panel p-4 text-sm text-emerald-200">
+          <div className="neo-panel p-4 text-sm text-[rgba(238,188,154,1)]">
             Create the endpoint entry first, then configure rate limits from the gauge icon in the list.
           </div>
           <div className="neo-card overflow-hidden sm:rounded-md">
-          <ul className="divide-y divide-emerald-500/10">
+          <ul className="divide-y divide-[rgba(203,151,113,0.24)]">
             {endpoints.map((endpoint) => (
               <li key={endpoint.id}>
-                <div className="px-6 py-4 hover:bg-emerald-500/5 transition">
+                <div className="px-6 py-4 hover:bg-[rgba(201,136,97,0.12)] transition">
                   <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-3">
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                             endpoint.httpMethod === 'GET'
-                              ? 'bg-emerald-500/10 text-emerald-300'
+                              ? 'bg-[rgba(201,136,97,0.14)] text-[rgba(225,169,131,1)]'
                               : endpoint.httpMethod === 'POST'
-                              ? 'bg-green-500/10 text-green-300'
+                              ? 'bg-[rgba(201,136,97,0.14)] text-[rgba(225,169,131,1)]'
                               : endpoint.httpMethod === 'PUT'
                               ? 'bg-yellow-500/10 text-yellow-300'
                               : endpoint.httpMethod === 'DELETE'
@@ -286,7 +286,7 @@ export default function Endpoints() {
                         onClick={() => handleToggleStatus(endpoint.id)}
                         className={`p-2 rounded-md ${
                           endpoint.isActive
-                            ? 'text-green-400 hover:bg-green-500/10'
+                            ? 'text-[rgba(225,169,131,1)] hover:bg-[rgba(201,136,97,0.16)]'
                             : 'text-gray-400 hover:bg-slate-700'
                         }`}
                         title={endpoint.isActive ? 'Disable' : 'Enable'}
@@ -295,7 +295,7 @@ export default function Endpoints() {
                       </button>
                       <Link
                         to={`/endpoints/${endpoint.id}/rate-limits`}
-                        className="p-2 text-emerald-300 hover:bg-emerald-500/10 rounded-md"
+                        className="p-2 text-[rgba(225,169,131,1)] hover:bg-[rgba(201,136,97,0.16)] rounded-md"
                         title="Rate limits"
                       >
                         <Gauge className="h-5 w-5" />
@@ -310,7 +310,7 @@ export default function Endpoints() {
                       </button>
                       <Link
                         to={`/endpoints/${endpoint.id}/edit`}
-                        className="p-2 text-emerald-300 hover:bg-emerald-500/10 rounded-md"
+                        className="p-2 text-[rgba(225,169,131,1)] hover:bg-[rgba(201,136,97,0.16)] rounded-md"
                         title="Edit"
                       >
                         <Edit className="h-5 w-5" />

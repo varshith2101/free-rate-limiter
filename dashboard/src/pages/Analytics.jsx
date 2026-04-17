@@ -160,15 +160,15 @@ export default function Analytics() {
         {chartData.length > 0 ? (
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1b2a1f" />
-              <XAxis dataKey="time" stroke="#9aa3a0" />
-              <YAxis stroke="#9aa3a0" />
-              <Tooltip contentStyle={{ backgroundColor: '#fff8f0', borderColor: '#d8b89f', color: '#5b3f31' }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#4a372d" />
+              <XAxis dataKey="time" stroke="#c8ae9b" />
+              <YAxis stroke="#c8ae9b" />
+              <Tooltip contentStyle={{ backgroundColor: '#261f1b', borderColor: '#b98462', color: '#f2e2d1' }} />
               <Legend />
               <Line
                 type="monotone"
                 dataKey="total"
-                stroke="#22c55e"
+                stroke="#c98861"
                 name="Total Requests"
               />
               <Line
@@ -180,7 +180,7 @@ export default function Analytics() {
               <Line
                 type="monotone"
                 dataKey="allowed"
-                stroke="#4ade80"
+                stroke="#e1a983"
                 name="Allowed"
               />
             </LineChart>
@@ -222,8 +222,8 @@ export default function Analytics() {
 
 function StatCard({ label, value, icon: Icon, color }) {
   const colorClasses = {
-    emerald: 'bg-emerald-500/10 text-emerald-400',
-    green: 'bg-green-500/10 text-green-400',
+    emerald: 'bg-[rgba(201,136,97,0.14)] text-[rgba(225,169,131,1)]',
+    green: 'bg-[rgba(201,136,97,0.14)] text-[rgba(225,169,131,1)]',
     red: 'bg-red-500/10 text-red-400',
     yellow: 'bg-yellow-500/10 text-yellow-400',
   };

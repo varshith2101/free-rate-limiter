@@ -133,7 +133,7 @@ export default function Dashboard() {
         </div>
         <ul className="divide-y divide-emerald-500/10">
           {stats.recentEndpoints.map((endpoint) => (
-            <li key={endpoint.id} className="px-6 py-4 hover:bg-emerald-500/5 transition">
+            <li key={endpoint.id} className="px-6 py-4 hover:bg-[rgba(201,136,97,0.12)] transition">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-white">
@@ -145,21 +145,21 @@ export default function Dashboard() {
                   <span
                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       endpoint.isActive
-                        ? 'bg-emerald-500/10 text-emerald-300'
-                        : 'bg-emerald-500/5 text-gray-300'
+                        ? 'bg-[rgba(201,136,97,0.14)] text-[rgba(225,169,131,1)]'
+                        : 'bg-[rgba(201,136,97,0.08)] text-gray-300'
                     }`}
                   >
                     {endpoint.isActive ? 'Active' : 'Inactive'}
                   </span>
                   <Link
                     to={`/endpoints/${endpoint.id}/rate-limits`}
-                    className="ml-3 text-sm text-emerald-300 hover:text-emerald-200"
+                    className="ml-3 text-sm text-[rgba(225,169,131,1)] hover:text-[rgba(242,201,172,1)]"
                   >
                     Rate limits
                   </Link>
                   <Link
                     to={`/endpoints/${endpoint.id}/edit`}
-                    className="ml-3 text-sm text-emerald-300 hover:text-emerald-200"
+                    className="ml-3 text-sm text-[rgba(225,169,131,1)] hover:text-[rgba(242,201,172,1)]"
                   >
                     Edit
                   </Link>

@@ -40,7 +40,7 @@ export default function Login({ onLogin }) {
       <div className="w-full max-w-md">
         <div className="neo-card p-8">
           <div className="text-center mb-8">
-            <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-lime-300 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-[0_0_16px_rgba(68,214,44,0.35)]">
+            <div className="w-12 h-12 bg-gradient-to-br from-[rgba(201,136,97,1)] to-[rgba(225,169,131,1)] rounded-xl flex items-center justify-center mx-auto mb-4 shadow-[0_0_16px_rgba(201,136,97,0.35)]">
               <span className="text-white font-bold">RL</span>
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">

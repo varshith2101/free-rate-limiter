@@ -159,7 +159,7 @@ export default function ApiKeys() {
 
       {loading ? (
         <div className="text-center py-12">
-          <div className="w-12 h-12 border-4 border-emerald-500/30 border-t-emerald-300 rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-[rgba(203,151,113,0.32)] border-t-[rgba(225,169,131,0.95)] rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-400">Loading API keys...</p>
         </div>
       ) : apiKeys.length === 0 ? (
@@ -192,7 +192,7 @@ export default function ApiKeys() {
                 <div className="neo-panel px-3 py-2">
                   <p className="text-xs text-gray-400">API key</p>
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-xs text-emerald-300 break-all">
+                    <p className="text-xs text-[rgba(225,169,131,1)] break-all">
                       {keyValue || 'Key hidden after initial create'}
                     </p>
                     {keyValue && (

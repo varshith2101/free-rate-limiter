@@ -217,8 +217,8 @@ export default function RateLimitConfigs() {
                   key={algo.value}
                   className={`flex items-start gap-3 border rounded-lg p-3 transition ${
                     locked
-                      ? 'border-emerald-500/10 text-gray-500'
-                      : 'border-emerald-500/20 text-gray-200 hover:border-emerald-400/60'
+                      ? 'border-[rgba(203,151,113,0.2)] text-gray-500'
+                      : 'border-[rgba(203,151,113,0.34)] text-gray-200 hover:border-[rgba(224,167,124,0.62)]'
                   }`}
                 >
                   <input

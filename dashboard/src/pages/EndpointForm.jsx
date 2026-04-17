@@ -138,7 +138,7 @@ export default function EndpointForm() {
                 required
                 value={formData.backendLinkId}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md bg-[rgba(255,252,248,0.92)] border border-[rgba(171,129,93,0.24)] text-white shadow-sm focus:border-[rgba(185,106,69,0.7)] focus:ring-[rgba(185,106,69,0.45)] sm:text-sm px-3 py-2"
+                className="mt-1 neo-input sm:text-sm px-3 py-2"
               >
                 {backendLinks.map((link) => (
                   <option key={link.id} value={link.id}>
@@ -168,7 +168,7 @@ export default function EndpointForm() {
               value={formData.path}
               onChange={handleChange}
               placeholder="/api/users"
-              className="mt-1 block w-full rounded-md bg-[rgba(255,252,248,0.92)] border border-[rgba(171,129,93,0.24)] text-white placeholder-gray-500 shadow-sm focus:border-[rgba(185,106,69,0.7)] focus:ring-[rgba(185,106,69,0.45)] sm:text-sm px-3 py-2"
+              className="mt-1 neo-input sm:text-sm px-3 py-2"
             />
             <p className="mt-1 text-sm text-gray-400">
               Supports wildcards, e.g., /api/users/*
@@ -189,7 +189,7 @@ export default function EndpointForm() {
               required
               value={formData.httpMethod}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md bg-[rgba(255,252,248,0.92)] border border-[rgba(171,129,93,0.24)] text-white shadow-sm focus:border-[rgba(185,106,69,0.7)] focus:ring-[rgba(185,106,69,0.45)] sm:text-sm px-3 py-2"
+              className="mt-1 neo-input sm:text-sm px-3 py-2"
             >
               <option value="*">All Methods (*)</option>
               <option value="GET">GET</option>
@@ -215,7 +215,7 @@ export default function EndpointForm() {
               value={formData.description}
               onChange={handleChange}
               placeholder="What does this endpoint do?"
-              className="mt-1 block w-full rounded-md bg-[rgba(255,252,248,0.92)] border border-[rgba(171,129,93,0.24)] text-white placeholder-gray-500 shadow-sm focus:border-[rgba(185,106,69,0.7)] focus:ring-[rgba(185,106,69,0.45)] sm:text-sm px-3 py-2"
+              className="mt-1 neo-input sm:text-sm px-3 py-2"
             />
           </div>
 
@@ -242,8 +242,8 @@ export default function EndpointForm() {
 
       {/* Help Text */}
       <div className="mt-6 neo-panel p-4">
-        <h3 className="text-sm font-medium text-emerald-300 mb-2">Next Steps</h3>
-        <p className="text-sm text-emerald-200">
+        <h3 className="text-sm font-medium text-[rgba(225,169,131,1)] mb-2">Next Steps</h3>
+        <p className="text-sm text-[rgba(238,188,154,1)]">
           Create the endpoint entry first, then add rate limit configurations from the
           rate limit button in the endpoints list.
         </p>
